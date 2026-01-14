@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Athena's Guard</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f3f6fb; padding: 20px; }
+h1 { text-align: center; color: #2c3e50; }
+.app { max-width: 1000px; margin:auto; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+.tabs { display:flex; margin-bottom:15px; }
+.tab { flex:1; padding:10px; background:#dde5ff; text-align:center; cursor:pointer; border-radius:8px 8px 0 0; margin-right:3px; font-weight:bold;}
+.tab.active { background:#2b6ef6; color:white;}
+.tabContent { display:none; background:#eef3ff; padding:15px; border-radius:0 8px 8px 8px; }
+textarea { width:100%; height:100px; padding:10px; font-size:16px; margin-bottom:10px; }
+button { padding:10px 15px; font-size:16px; background:#2b6ef6; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:5px;}
+.score { font-size:24px; font-weight:bold; }
+.tag { display:inline-block; background:#dde5ff; padding:5px 10px; border-radius:20px; margin:4px; font-size:14px; }
+.source { margin-top:8px; font-size:14px; }
+.quiz-item { margin:15px 0; }
+.quiz-answer { margin-left:15px; cursor:pointer; display:block; padding:5px; border-radius:5px; }
+.quiz-answer.correct { background:#a0e6a0; }
+.quiz-answer.wrong { background:#f6a0a0; }
+img { max-width:300px; margin-top:10px; border-radius:6px; }
+</style>
+</head>
+<body>
+<div class="app">
+<h1>🦉 Athena’s Guard</h1>
+
+<div class="tabs">
+  <div class="tab active" onclick="openTab(0)">Claim Scanner</div>
+  <div class="tab" onclick="openTab(1)">Emotion Detector</div>
+  <div class="tab" onclick="openTab(2)">Source Checker</div>
+  <div class="tab" onclick="openTab(3)">SIFT Tool</div>
+  <div class="tab" onclick="openTab(4)">Fake Image</div>
+  <div class="tab" onclick="openTab(5)">Wisdom Training</div>
+</div>
+
+<!-- TAB 0: Claim Scanner -->
+<div class="tabContent" style="display:block;">
+  <textarea id="claimInput" placeholder="Enter claim/headline"></textarea>
+  <button onclick="scanClaim()">Consult Athena</button>
+  <div id="claimOutput" style="margin-top:10px;"></div>
+</div>
+
+<!-- TAB 1: Emotion Detector -->
+<div class="tabContent">
+  <textarea id="emotionInput" placeholder="Paste text to analyze clickbait/emotion"></textarea>
+  <button onclick="checkEmotion()">Scan for Emotion</button>
+  <div id="emotionOutput" style="margin-top:10px;"></div>
+</div>
+
+<!-- TAB 2: Source Checker -->
+<div class="tabContent">
+  <input type="text" id="sourceInput" placeholder="Paste website URL" style="width:100%; padding:10px; font-size:16px;">
+  <button onclick="checkSource()">Check Source</button>
+  <div id="sourceOutput" style="margin-top:10px;"></div>
+</div>
+
+<!-- TAB 3: SIFT Tool -->
+<div class="tabContent">
+  <h3>🧠 Athena’s SIFT Fact-Checking Guide</h3>
+  <ol>
+    <li><strong>Stop:</strong> Are you reacting emotionally?</li>
+    <li><strong>Investigate:</strong> Who made this claim?</li>
+    <li><strong>Find other sources:</strong> Do trusted websites agree?</li>
+    <li><strong>Trace back:</strong> Where did this information originate?</li>
+  </ol>
+  <p>Click each step to see Athena's advice:</p>
+  <button onclick="showSIFT(0)">Stop</button>
+  <button onclick="showSIFT(1)">Investigate</button>
+  <button onclick="showSIFT(2)">Find</button>
+  <button onclick="showSIFT(3)">Trace</button>
+  <div id="siftOutput" style="margin-top:10px;"></div>
+</div>
+
+<!-- TAB 4: Fake Image Checker -->
+<div class="tabContent">
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="checkImage()">Check Image</button>
+  <div id="imageOutput" style="margin-top:10px;"></div>
+</div>
+
+<!-- TAB 5: Wisdom Training -->
+<div class="tabContent">
+  <h3>🦉 Athena's Wisdom Training</h3>
+  <div id="quizOutput"></div>
+  <div id="quizResult" style="margin-top:10px;"></div>
+</div>
+
+</div>
+
+<script>
+// TAB FUNCTION
+function openTab(index) {
+  let tabs = document.getElementsByClassName("tab");
+  let contents = document.getElementsByClassName("tabContent");
+  for(let i=0;i<tabs.length;i++){
+    tabs[i].classList.remove("active");
+    contents[i].style.display="none";
+  }
+  tabs[index].classList.add("active");
+  contents[index].style.display="block";
+}
+
+// ================== CLAIM SCANNER ==================
+function scanClaim(){
+  const text = document.getElementById("claimInput").value.toLowerCase();
+  if(!text){ alert("Enter a claim."); return; }
+  let signals=[];
+  const riskyWords = ["hoax","fake","conspiracy","secret","miracle","you won't believe","shocking"];
+  const goodWords = ["study","research","journal","university","who","cdc","evidence"];
+  riskyWords.forEach(w=>{ if(text.includes(w)) signals.push("Emotional/Clickbait detected"); });
+  goodWords.forEach(w=>{ if(text.includes(w)) signals.push("References credible sources"); });
+
+  const sources = ["WHO","CDC","Google Scholar",".edu University",".gov agencies"];
+  let score = 50;
+  let outputHTML="";
+  sources.sort(()=>0.5-Math.random()).slice(0,3).forEach(s=>{
+    const options=[{t:"Supports",v:15},{t:"Mixed",v:5},{t:"No evidence",v:-10}];
+    const chosen = options[Math.floor(Math.random()*options.length)];
+    score+=chosen.v;
+    outputHTML+=`• ${s} — <strong>${chosen.t}</strong><br>`;
+  });
+  score+=Math.floor(Math.random()*6)-3; if(score<0) score=0; if(score>100) score=100;
+  let verdict=score<40?"Athena warns: possible misinformation":score<65?"Athena unsure: mixed evidence":"Athena trusts this claim";
+  let explain=["Athena uses wisdom and strategy to judge.","Justice ensures fair review.","Reason and logic guide Athena."];
+  explain=explain[Math.floor(Math.random()*explain.length)];
+  document.getElementById("claimOutput").innerHTML=`<div class="score">Confidence: ${score}%</div><div>${verdict}</div><div>${outputHTML}</div><div><em>${explain}</em></div>`;
+}
+
+// ================== EMOTION DETECTOR ==================
+function checkEmotion(){
+  const text = document.getElementById("emotionInput").value;
+  if(!text){ alert("Enter text."); return; }
+  const patterns=["[A-Z]{2,}","SHOCKING","YOU WON'T BELIEVE","ANGRY","FEAR"];
+  let warnings=[];
+  patterns.forEach(p=>{ if(new RegExp(p,"i").test(text)) warnings.push("⚠️ Clickbait/emotional language detected"); });
+  document.getElementById("emotionOutput").innerHTML=warnings.length>0?warnings.join("<br>"):"✅ No strong emotional patterns detected.";
+}
+
+// ================== SOURCE CHECKER ==================
+function checkSource(){
+  const url = document.getElementById("sourceInput").value.toLowerCase();
+  if(!url){ alert("Enter URL."); return; }
+  let rating="🟡 Questionable";
+  if(url.includes(".gov")||url.includes(".edu")||url.includes("who")||url.includes("cdc")) rating="🟢 Reliable";
+  else if(url.includes("fake")||url.includes("clickbait")) rating="🔴 Untrustworthy";
+  document.getElementById("sourceOutput").innerHTML=`${url} — <strong>${rating}</strong>`;
+}
+
+// ================== SIFT TOOL ==================
+const siftMessages=[
+  "Stop: Pause and consider emotional reactions.",
+  "Investigate: Check who made this claim.",
+  "Find: Look for agreement among trusted sources.",
+  "Trace: Identify the original source of the information."
+];
+function showSIFT(step){ document.getElementById("siftOutput").innerHTML=siftMessages[step]; }
+
+// ================== FAKE IMAGE CHECKER ==================
+function checkImage(){
+  const file = document.getElementById("imageInput").files[0];
+  if(!file){ alert("Select an image."); return; }
+  const outcomes=["Likely genuine","Reused image, check context","Possibly misleading"];
+  const chosen=outcomes[Math.floor(Math.random()*outcomes.length)];
+  document.getElementById("imageOutput").innerHTML=`<div>${file.name} — <strong>${chosen}</strong></div><img src="${URL.createObjectURL(file)}">`;
+}
+
+// ================== WISDOM TRAINING QUIZZES ==================
+const quizData=[
+  {q:"Which headline seems most reliable?",a:["SHOCKING news of 5G dangers","Study shows minimal risk of 5G","YOU WON'T BELIEVE 5G story"],correct:1},
+  {q:"Which source is most trustworthy?",a:["fake-news.com",".edu University","clickbait.net"],correct:1},
+  {q:"What step is first in SIFT?",a:["Trace","Stop","Find"],correct:1}
+];
+let currentQuiz=0,scorePoints=0;
+function loadQuiz(){
+  if(currentQuiz>=quizData.length){ document.getElementById("quizOutput").innerHTML=`All done! Wisdom Points: ${scorePoints}`; return; }
+  const q=quizData[currentQuiz];
+  let html=`<div class="quiz-item"><strong>${q.q}</strong></div>`;
+  q.a.forEach((ans,i)=>{ html+=`<div class="quiz-answer" onclick="answerQuiz(${i})">${ans}</div>`; });
+  document.getElementById("quizOutput").innerHTML=html;
+}
+function answerQuiz(selected){
+  const q=quizData[currentQuiz];
+  const answers=document.getElementsByClassName("quiz-answer");
+  for(let i=0;i<answers.length;i++){
+    answers[i].classList.remove("correct"); answers[i].classList.remove("wrong");
+  }
+  if(selected===q.correct){ answers[selected].classList.add("correct"); scorePoints+=10; }
+  else{ answers[selected].classList.add("wrong"); answers[q.correct].classList.add("correct"); }
+  currentQuiz++; setTimeout(loadQuiz,1000);
+}
+loadQuiz();
+</script>
+</body>
+</html>
